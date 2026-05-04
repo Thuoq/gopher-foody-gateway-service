@@ -20,6 +20,7 @@ go.work.sum
 
 # Env files
 .env
+.env.docker
 
 # IDEs
 .idea/
