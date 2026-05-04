@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"gopher-identity-service/internal/config"
+	"gopher-gateway-service/internal/config"
 )
 
 func NewLogger(cfg *config.Config) (*zap.Logger, error) {

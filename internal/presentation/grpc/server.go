@@ -1,11 +1,11 @@
 package grpc
 
 import (
+	"gopher-gateway-service/internal/config"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"gopher-identity-service/internal/config"
 )
 
 func NewGRPCServer(cfg *config.Config, logger *zap.Logger) *grpc.Server {

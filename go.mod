@@ -1,4 +1,4 @@
-module gopher-identity-service
+module gopher-gateway-service
 
 go 1.26
 

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,16 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 
-	"gopher-identity-service/internal/application/usecases"
-	"gopher-identity-service/internal/config"
-	"gopher-identity-service/internal/infrastructure/database"
-	"gopher-identity-service/internal/infrastructure/database/repositories"
-	grpcServer "gopher-identity-service/internal/presentation/grpc"
-	httpRouter "gopher-identity-service/internal/presentation/http"
-	"gopher-identity-service/internal/presentation/http/handlers/user"
-	"gopher-identity-service/pkg/logger"
+	"gopher-gateway-service/internal/config"
+	httpRouter "gopher-gateway-service/internal/presentation/http"
+	"gopher-gateway-service/pkg/jwt"
+	"gopher-gateway-service/pkg/logger"
 )
 
 func BuildContainer() *dig.Container {
@@ -31,19 +25,10 @@ func BuildContainer() *dig.Container {
 	// Core dependencies
 	container.Provide(config.LoadConfig)
 	container.Provide(logger.NewLogger)
-
-	// Infrastructure
-	container.Provide(database.NewPostgresDB)
-	container.Provide(repositories.NewUserPostgresRepository)
-
-	// Application
-	container.Provide(usecases.NewSSOUseCase)
+	container.Provide(jwt.NewManager)
 
 	// Presentation
-	container.Provide(user.NewGetProfileHandler)
-	container.Provide(user.NewRouter)
 	container.Provide(httpRouter.NewRouter)
-	container.Provide(grpcServer.NewGRPCServer)
 
 	return container
 }
@@ -51,7 +36,7 @@ func BuildContainer() *dig.Container {
 func main() {
 	container := BuildContainer()
 
-	err := container.Invoke(func(cfg *config.Config, log *zap.Logger, router *gin.Engine, grpcSrv *grpc.Server) {
+	err := container.Invoke(func(cfg *config.Config, log *zap.Logger, router *gin.Engine) {
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
 
@@ -62,38 +47,24 @@ func main() {
 		}
 
 		go func() {
-			log.Info("Starting HTTP Server", zap.Int("port", cfg.App.HTTPPort))
+			log.Info("Starting Gateway HTTP Server", zap.Int("port", cfg.App.HTTPPort))
 			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.Fatal("HTTP Server failed to start", zap.Error(err))
+				log.Fatal("Gateway Server failed to start", zap.Error(err))
 			}
 		}()
 
-		// Start gRPC Server
-		go func() {
-			lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.App.GRPCPort))
-			if err != nil {
-				log.Fatal("Failed to listen for gRPC", zap.Error(err))
-			}
-			log.Info("Starting gRPC Server", zap.Int("port", cfg.App.GRPCPort))
-			if err := grpcSrv.Serve(lis); err != nil {
-				log.Fatal("gRPC Server failed to start", zap.Error(err))
-			}
-		}()
-
-		// Wait for interrupt signal to gracefully shutdown the servers
+		// Wait for interrupt signal to gracefully shutdown
 		<-ctx.Done()
-		log.Info("Shutting down gracefully...")
+		log.Info("Shutting down Gateway gracefully...")
 
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
-			log.Error("HTTP Server forced to shutdown", zap.Error(err))
+			log.Error("Gateway Server forced to shutdown", zap.Error(err))
 		}
 
-		grpcSrv.GracefulStop()
-
-		log.Info("Servers exited gracefully")
+		log.Info("Gateway exited gracefully")
 	})
 
 	if err != nil {
