@@ -2,7 +2,8 @@ package middleware
 
 import (
 	"context"
-	"gopher-gateway-service/pkg/jwt"
+	"gopher-foody-gateway-service/pkg/jwt"
+
 	"net/http"
 	"strings"
 
@@ -33,7 +34,7 @@ func AuthMiddleware(jwtManager jwt.TokenManager) gin.HandlerFunc {
 		// 1. Store in Gin context
 		c.Set("public_user_id", claims.PublicUserId)
 		c.Set("session_id", claims.SessionID)
-		
+
 		// 2. Store in Request context
 		ctx := context.WithValue(c.Request.Context(), "public_user_id", claims.PublicUserId)
 		ctx = context.WithValue(ctx, "session_id", claims.SessionID)

@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"gopher-gateway-service/internal/config"
+	"gopher-foody-gateway-service/internal/config"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

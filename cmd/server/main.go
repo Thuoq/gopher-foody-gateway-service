@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"gopher-foody-gateway-service/internal/config"
+	"gopher-foody-gateway-service/pkg/jwt"
+	"gopher-foody-gateway-service/pkg/logger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,11 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
-
-	"gopher-gateway-service/internal/config"
-	httpRouter "gopher-gateway-service/internal/presentation/http"
-	"gopher-gateway-service/pkg/jwt"
-	"gopher-gateway-service/pkg/logger"
 )
 
 func BuildContainer() *dig.Container {

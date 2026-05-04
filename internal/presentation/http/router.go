@@ -1,13 +1,13 @@
 package http
 
 import (
+	"gopher-foody-gateway-service/internal/config"
+	"gopher-foody-gateway-service/internal/presentation/http/handlers"
+	"gopher-foody-gateway-service/internal/presentation/http/middleware"
+	"gopher-foody-gateway-service/pkg/jwt"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-
-	"gopher-gateway-service/internal/config"
-	"gopher-gateway-service/internal/presentation/http/handlers"
-	"gopher-gateway-service/internal/presentation/http/middleware"
-	"gopher-gateway-service/pkg/jwt"
 )
 
 func NewRouter(cfg *config.Config, logger *zap.Logger, jwtManager jwt.TokenManager) *gin.Engine {
