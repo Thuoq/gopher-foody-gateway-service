@@ -29,6 +29,9 @@ func NewProxyHandler(targetURL string) (*ProxyHandler, error) {
 		if userID, ok := pr.In.Context().Value("public_user_id").(string); ok {
 			pr.Out.Header.Set("X-User-Id", userID)
 		}
+		if sessionID, ok := pr.In.Context().Value("session_id").(string); ok {
+			pr.Out.Header.Set("X-Session-Id", sessionID)
+		}
 	}
 
 	return &ProxyHandler{
