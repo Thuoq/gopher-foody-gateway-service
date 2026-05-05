@@ -43,6 +43,10 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("app_http_port", 8000)
 	viper.SetDefault("logger_level", "debug")
 
+	// Upstream defaults
+	viper.SetDefault("identity_service_url", "http://localhost:8001")
+	viper.SetDefault("restaurant_service_url", "http://localhost:8002")
+
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
