@@ -40,22 +40,34 @@ func NewRouter(cfg *config.Config, logger *zap.Logger, jwtManager jwt.TokenManag
 
 	api := r.Group("/api/v1")
 
-	// Public routes
+	// Identity routes
+	auth := api.Group("/auth")
 	{
-		api.POST("/auth/sign-up", identityProxy.Proxy)
-		api.POST("/auth/sign-in", identityProxy.Proxy)
-		api.POST("/auth/refresh", identityProxy.Proxy)
+		auth.POST("/sign-up", identityProxy.Proxy)
+		auth.POST("/sign-in", identityProxy.Proxy)
+		auth.POST("/refresh", identityProxy.Proxy)
+
+		protectedAuth := auth.Group("")
+		protectedAuth.Use(middleware.AuthMiddleware(jwtManager))
+		{
+			protectedAuth.POST("/logout", identityProxy.Proxy)
+		}
 	}
 
-	// Protected routes
-	protected := api.Group("")
-	protected.Use(middleware.AuthMiddleware(jwtManager))
+	// Restaurant routes
+	restaurants := api.Group("/restaurants")
 	{
-		// Identity protected routes
-		protected.POST("/auth/logout", identityProxy.Proxy)
+		// Public
+		restaurants.GET("", restaurantProxy.Proxy)
+		restaurants.GET("/:id", restaurantProxy.Proxy)
+		restaurants.GET("/:id/foods", restaurantProxy.Proxy)
 
-		// Other services
-		protected.Any("/restaurants/*path", restaurantProxy.Proxy)
+		// Admin (Protected)
+		admin := restaurants.Group("/admin")
+		admin.Use(middleware.AuthMiddleware(jwtManager))
+		{
+			admin.Any("/*path", restaurantProxy.Proxy)
+		}
 	}
 
 	return r
