@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gopher-foody-gateway-service/internal/config"
+	httpRouter "gopher-foody-gateway-service/internal/presentation/http"
 	"gopher-foody-gateway-service/pkg/jwt"
 	"gopher-foody-gateway-service/pkg/logger"
 	"net/http"
