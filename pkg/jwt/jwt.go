@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"gopher-gateway-service/internal/config"
+	"gopher-foody-gateway-service/internal/config"
 
 	"github.com/golang-jwt/jwt/v5"
 )
