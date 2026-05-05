@@ -19,6 +19,7 @@ func NewProxyHandler(targetURL string) (*ProxyHandler, error) {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.Director = nil
 
 	// Use the modern Rewrite hook instead of the deprecated Director
 	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
