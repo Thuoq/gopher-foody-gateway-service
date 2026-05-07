@@ -38,6 +38,11 @@ func NewRouter(cfg *config.Config, logger *zap.Logger, jwtManager jwt.TokenManag
 		logger.Fatal("Failed to create restaurant proxy", zap.Error(err))
 	}
 
+	orderProxy, err := handlers.NewProxyHandler(cfg.Upstream.OrderServiceURL)
+	if err != nil {
+		logger.Fatal("Failed to create order proxy", zap.Error(err))
+	}
+
 	api := r.Group("/api/v1")
 
 	// Identity routes
@@ -68,6 +73,15 @@ func NewRouter(cfg *config.Config, logger *zap.Logger, jwtManager jwt.TokenManag
 		{
 			admin.Any("/*path", restaurantProxy.Proxy)
 		}
+	}
+
+	// Order routes
+	orders := api.Group("/orders")
+	orders.Use(middleware.AuthMiddleware(jwtManager))
+	{
+		orders.POST("", orderProxy.Proxy)
+		orders.GET("", orderProxy.Proxy)
+		orders.GET("/:id", orderProxy.Proxy)
 	}
 
 	return r

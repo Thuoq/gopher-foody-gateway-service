@@ -24,6 +24,7 @@ type JWTConfig struct {
 type UpstreamConfig struct {
 	IdentityServiceURL   string `mapstructure:"identity_service_url"`
 	RestaurantServiceURL string `mapstructure:"restaurant_service_url"`
+	OrderServiceURL      string `mapstructure:"order_service_url"`
 }
 
 type LoggerConfig struct {
@@ -46,6 +47,7 @@ func LoadConfig() (*Config, error) {
 	// Upstream defaults
 	viper.SetDefault("identity_service_url", "http://localhost:8001")
 	viper.SetDefault("restaurant_service_url", "http://localhost:8002")
+	viper.SetDefault("order_service_url", "http://localhost:8003")
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
